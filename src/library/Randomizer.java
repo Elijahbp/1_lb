@@ -33,10 +33,11 @@ public class Randomizer {
 
     private void generateSymbols(){
         Random random = new Random();
+
         for (int i = 0; i < this.countGeneratedChar; i++) {
             int pr = random.nextInt(100);
-                listGeneratedSymbols.add(listSymbols.entrySet().stream()
-                        .filter(n->(n.getValue() >= pr)).findAny().get().getKey());
+            listGeneratedSymbols.add(listSymbols.entrySet().stream()
+                .filter(n->(n.getValue() >= pr)).findAny().get().getKey());
         }
         listGeneratedSymbols.stream().forEach(s->{
             System.out.println(s +";");
