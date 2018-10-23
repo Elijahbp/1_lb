@@ -14,8 +14,9 @@ public class Main {
 //        arrayList.add(0.2*100);
 //        arrayList.add(0.5*100);
 //        new Randomizer(50,1000000,arrayList);
+
         try {
-            Parser parser = new Parser("kek.txt");
+            new Parser("kek.txt");
         } catch (IOException e) {
             e.printStackTrace();
         }

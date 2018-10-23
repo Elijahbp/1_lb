@@ -4,6 +4,7 @@ import java.awt.*;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.math.BigInteger;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -13,7 +14,7 @@ import java.util.stream.Stream;
 public class Parser {
     private String [] basicString;
     private String [] probabilityString;
-
+    private int maxLengthProbability;
 
     public Parser(String path) throws IOException {
         BufferedReader bufferedReader = new BufferedReader(new FileReader(path));
@@ -25,19 +26,10 @@ public class Parser {
         convertData();
     }
 
-    //ArrayList<Double>
-    private void convertData (){
 
-        int startChar = Integer.parseInt(basicString[0]); //
-        int countGeneratedChar = Integer.parseInt(basicString[1]); //TODO Сделать правильное определение
-        ArrayList<Double> probabilityData = new ArrayList<>();
-        Stream.of(probabilityString).forEach(s ->probabilityData.add(Double.parseDouble(s)*100));
-        System.out.println(probabilityData.get(0).doubleValue());
-        new Randomizer(startChar,countGeneratedChar,probabilityData);
-    }
     private void parseData(){
-        int maxLengthProbability=0;
-        int[] exData = new int[probabilityString.length];
+        maxLengthProbability=0;
+
         for (int i = 0; i < probabilityString.length; i++) {
             if(maxLengthProbability < (probabilityString[i].length()-2)){
                 maxLengthProbability = probabilityString[i].length()-2;
@@ -45,13 +37,43 @@ public class Parser {
             probabilityString[i] = probabilityString[i].replace("0.","");
         }
 
-        for (int i = 0; i < probabilityString.length; i++) {
-            probabilityString[i].concat("");
 
 
-            exData[i] = exData[i].pow(maxLengthProbability);
-            System.out.println(exData[i]);
-        }
-        System.out.println(maxLengthProbability);
     }
+    private void convertData (){
+        ArrayList<Integer> exData = new ArrayList<>();
+        int startChar = Integer.parseInt(basicString[0]); //
+        int countGeneratedChar = Integer.parseInt(basicString[1]); //TODO Сделать правильное определение
+
+        StringBuilder bufValue;
+        for (int i = 0; i < probabilityString.length; i++) {
+            bufValue = new StringBuilder();
+            bufValue.append(probabilityString[i]);
+            for (int j = 0; j < maxLengthProbability-probabilityString[i].length(); j++) {
+                bufValue.append("0");
+            }
+            exData.add(Integer.parseInt(bufValue.toString()));
+        }
+        if (convergenceCheck(exData)){
+            new Randomizer(startChar,countGeneratedChar,exData,erectionInDegree(10,maxLengthProbability));
+        }else {
+            System.out.println("Сумма вероятностей не равно ....");
+        }
+    }
+
+    private boolean convergenceCheck(ArrayList<Integer> exData){
+        if(erectionInDegree(10,maxLengthProbability) == exData.stream().mapToInt(Integer::shortValue).sum())
+            return true;
+        else return false;
+    }
+
+
+    private int erectionInDegree(int x, int measure){
+        int a=1;
+        for (int i = 0; i < measure; i++) {
+            a*=x;
+        }
+        return a;
+    }
+
 }
