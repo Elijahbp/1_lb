@@ -16,8 +16,10 @@ public class Main {
 //        new Randomizer(50,1000000,arrayList);
 
         try {
-            new Parser("kek.txt");
+            new Parser("matrix.txt","lol.txt");
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
