@@ -90,7 +90,6 @@ public class Randomizer {
             }
         }else if (typeGeneration == TYPE_GENERATION_BAES){
             //Т.к. матрицы подаваемые на вход являются квадратными, то для решения СЛАУ им будет добавляться столбец из нулей
-            generateLastColumn();
             for (int i = 0; i < this.countGeneratedChar; i++) {
                 int pr = random.nextInt(order);
                 if (i == 0) {
@@ -101,11 +100,9 @@ public class Randomizer {
                         if(maxValue[0] <aDouble){
                             maxValue[0] = aDouble;
                         }
-
                     });
-                    double v = 0 + (maxValue[0] - 0) * random.nextDouble();
                     listGeneratedSymbols.add(h.entrySet().stream()
-                            .filter(n->(n.getValue() >= v)).findAny().get().getKey());
+                            .filter(n->(n.getValue() >= random.nextDouble())).findAny().get().getKey());
                 }else{
                     listGeneratedSymbols.add(hashMapforBaesType.getHashProbabilitys(listGeneratedSymbols.get(i-1)).entrySet().stream()
                             .filter(n->(n.getValue() >= pr)).findAny().get().getKey());
@@ -114,29 +111,25 @@ public class Randomizer {
         }
     }
 
-    private void generateLastColumn(){
-        Random random = new Random();
-        for (List<Integer> integers:listProbability) {
-            integers.add(random.nextInt(100));
-        }
-    }
-
     private String statistic(){
         StringBuilder statistic = new StringBuilder();
         ArrayList<Double> probabilitys = new ArrayList();
+        StringBuilder generatedSymbols = new StringBuilder();
+        listGeneratedSymbols.forEach(character -> generatedSymbols.append(character));
+        statistic.append(generatedSymbols.toString()).append("\n");
         listSymbols.stream().forEach(character->{
-            double countRepeatChar = (int) listGeneratedSymbols.stream().filter(t -> character.equals(t)).count();
+            double countRepeatChar = (int) listGeneratedSymbols.stream().filter(character::equals).count();
             probabilitys.add(countRepeatChar/listGeneratedSymbols.size());
             statistic.append("Total count of a ").append(character).append(" is a:").append(countRepeatChar)
-                    .append(". The probability symbol falling out: ")
+                    .append(". The symbol frequency : ")
                     .append(countRepeatChar/listGeneratedSymbols.size()).append("\n");
         });
-        double c=0;
+        double Entropy=0;
         for (Double v: probabilitys) {
-            c += v* lg(v);
+            Entropy += v* lg(v);
         }
-        c *= -1;
-        statistic.append("Entropy equals to: ").append(c);
+        Entropy *= -1;
+        statistic.append("Entropy equals to: ").append(Entropy);
         return statistic.toString();
     }
 
