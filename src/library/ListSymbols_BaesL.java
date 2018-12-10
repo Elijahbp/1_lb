@@ -1,11 +1,8 @@
 package library;
 
-import mathLib.Algorithm;
-import mathLib.LinearSystem;
-import mathLib.MyEquation;
+import mathLib.MethodGauss;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -36,76 +33,53 @@ public class ListSymbols_BaesL {
         }
     }
 
-    private ArrayList<ArrayList<Integer>> convertMatrix(List<List<Integer>> matrix){
-        Integer[][] newMatrix = new Integer[matrix.size()-1][matrix.size()];
-        for (int i = 0; i < newMatrix.length; i++) {
-            for (int j = 0; j < newMatrix[i].length; j++) {
-                newMatrix[i][j] = 1;
-            }
-        }
+    private double[][] convertMatrix(List<List<Integer>> matrix){
+        double[][] newMatrix = new double[matrix.size()-1][matrix.size()];
+
 
         for (int i = 0; i < newMatrix.length; i++) {
             for (int j = 0; j < newMatrix.length; j++) {
                 if (i==j){
-                    newMatrix[i][j] = 1 + matrix.get(matrix.size()-1).get(i) - matrix.get(i).get(j);
+                    newMatrix[j][i] = 1 + matrix.get(matrix.size()-1).get(i) - matrix.get(i).get(j);
                 }else {
-                    newMatrix[i][j] = matrix.get(matrix.size()-1).get(i) - matrix.get(j).get(i);
+                    newMatrix[j][i] = matrix.get(matrix.size()-1).get(i) - matrix.get(j).get(i);
                 }
             }
         }
         for (int i = 0; i < newMatrix.length; i++) {
-            newMatrix[i][newMatrix.length-1] = matrix.get(matrix.size()-1).get(i);
+            newMatrix[i][newMatrix[i].length-1] = matrix.get(matrix.size()-1).get(i);
         }
-        ArrayList<ArrayList<Integer>> matrixList = new ArrayList<>();
-        for (int i = 0; i < newMatrix.length; i++) {
-            matrixList.add(new ArrayList<>());
-            matrixList.get(i).addAll(Arrays.asList(newMatrix[i]));
-        }
-        return matrixList;
+        return newMatrix;
     }
-    //TODO СДелать определение безусловных вероятностей путем решения линейных уравнений!!!
     public HashMap<Character,Double> getHeadProbabilities(List<List<Integer>> matrixProbabilities){
 
 
-
         HashMap<Character,Double> hashMap = new HashMap();
-        convertMatrix(matrixProbabilities);
-        LinearSystem<Integer, MyEquation> list = generateSystem(convertMatrix(matrixProbabilities));
-        Algorithm<Integer,MyEquation> algorithm = new Algorithm<>(list);
-        algorithm.calculate();
-        int i,j;
-        double bufV = 0;
-        Double[] x = new Double[list.size()+1];
-        for(i = list.size() - 1; i >= 0; i--) {
-            double sum = 0.0;
-            for(j = list.size() - 1; j > i; j--) {
-                sum += list.itemAt(i, j) * x[j];
-            }
-            x[i] = Math.abs((list.itemAt(i, list.size()) - sum )/ list.itemAt(i, j));
-            bufV += x[i];
+        double[][] matrixA = convertMatrix(matrixProbabilities);
+        double[] vectorB = new double[matrixA.length];
+
+
+        for (int i = 0; i < matrixA.length; i++) {
+            vectorB[i] = matrixA[i][matrixA.length];
         }
-        Double l = 0.0;
-        x[x.length-1] = 1 - bufV;
-        for (int k = 0; k < x.length; k++) {
-            l+=Math.abs(x[k]);
+        double[] vectorX;
+        vectorX = MethodGauss.method(matrixA,vectorB);
+
+        double bufV=0;
+        for (int i = 0; i < vectorX.length-1; i++) {
+            bufV += vectorX[i];
+        }
+        double l = 0.0;
+        vectorX[vectorX.length-1] = 1-bufV;
+        for (int k = 0; k < vectorX.length; k++) {
+            l+=Math.abs(vectorX[k]);
             hashMap.put(listSymbols.get(k),l);
         }
-
         return hashMap;
     }
 
 
 
-
-
-    public LinearSystem<Integer, MyEquation> generateSystem(ArrayList<ArrayList<Integer>> listProbability){
-        LinearSystem<Integer, MyEquation> list = new LinearSystem<Integer, MyEquation>();
-        for (int i = 0; i < listProbability.size(); i++){
-            MyEquation eq = new MyEquation(listProbability.get(i));
-            list.push(eq);
-        }
-        return list;
-    }
 
 
     private void setBorders(char forSymbol,List<Integer> probabilities){
